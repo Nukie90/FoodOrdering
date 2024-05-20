@@ -1,0 +1,20 @@
+app:
+  env: dev
+  name: food-ordering
+  version: 1.0.0
+  port: 1323
+  host: localhost
+
+database:
+  driver: postgres
+  host: localhost
+  port: 3232
+  username: postgres
+  password: 12345
+  database: food_ordering
+
+logger:
+  level: debug
+  format: json
+  output: stdout
+
