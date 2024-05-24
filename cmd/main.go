@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	envFlag := flag.String("env", "common", "a string")
+	envFlag := flag.String("env", "lite", "a string")
 
 	flag.Parse()
 
@@ -33,6 +33,7 @@ func main() {
 
 	app := fiber.New()
 
+	internal.SetupRoutes(app, db)
 	validating.SetupMiddleware(app)
 	
 	serverConfig := internal.NewServerConfig(configDetail)

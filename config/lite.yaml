@@ -1,16 +1,16 @@
 app:
-  env: dev
+  env: lite
   name: food-ordering
   version: 1.0.0
   port: 3200
   host: localhost
 
 database:
-  driver: postgres
+  driver: sqlite3
   host: localhost
-  port: 3232
-  username: postgres
-  password: 12345
+  port: 0
+  username:
+  password:
   database: food_ordering
 
 logger:

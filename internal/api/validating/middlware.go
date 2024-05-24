@@ -10,7 +10,7 @@ import (
 
 func SetupMiddleware(app *fiber.App) {
 	app.Use(jwtware.New(jwtware.Config{
-		SigningKey :jwtware.SigningKey{Key: []byte("secret")},
+		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
 	}))
 }
 
@@ -39,10 +39,8 @@ func JWTAuth() func(*fiber.Ctx) error {
 			})
 		}
 
-		c.Locals("user_type", claims["user_type"])
-		// fmt.Println(claims["user_type"])
-		c.Locals("user_id", claims["user_id"])
-		// fmt.Println(claims["user_id"])
+		c.Locals("user_id", claims["userID"])
+		c.Locals("user_type", claims["userType"])
 		return c.Next()
 	})
 }

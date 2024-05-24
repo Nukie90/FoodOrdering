@@ -8,11 +8,10 @@ import (
 
 // Food is a struct that represents food entity
 type Food struct {
-	ID          uint           `gorm:"primaryKey"`
+	FoodId      uint           `gorm:"primaryKey"`
 	Name        string         `gorm:"unique;not null"`
 	Description string         `gorm:"not null"`
 	Price       int            `gorm:"not null"`
-	Avaliable   bool           `gorm:"not null"`
 	CreatedAt   time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt   time.Time      `gorm:"autoUpdateTime"`
 	DeleteAt    gorm.DeletedAt `gorm:"index"`
@@ -25,8 +24,7 @@ func (Food) TableName() string {
 
 // BeforeCreate is a function to generate ULID before creating a new record
 func (f *Food) BeforeCreate(tx *gorm.DB) (err error) {
-	f.CreatedAt = time.Now()
-	f.UpdatedAt = time.Now()
+	f.FoodId = uint(time.Now().Unix())
 	return
 }
 

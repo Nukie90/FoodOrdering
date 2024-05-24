@@ -6,20 +6,11 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"github.com/spf13/viper"
 )
-
-/*
-database:
-  driver: postgres
-  host: localhost
-  port: 5432
-  username: postgres
-  password: postgres
-  database: food_ordering
-*/
 
 type GormConfig struct {
 	Driver   string
@@ -46,6 +37,8 @@ func (gc *GormConfig) Connection() (*gorm.DB, error) {
 		return gc.PostgresConnection()
 	} else if gc.Driver == "mysql" {
 		return gc.MySQLConnection()
+	} else if gc.Driver == "sqlite3" {
+		return gc.SQLiteConnection()
 	}
 
 	return nil, fmt.Errorf("unsupported database driver: %s", gc.Driver)
@@ -71,7 +64,18 @@ func (gc *GormConfig) MySQLConnection() (*gorm.DB, error) {
 	return db, nil
 }
 
+func (gc *GormConfig) SQLiteConnection() (*gorm.DB, error) {
+	dsn := fmt.Sprintf("%s.db", "internal/db/" + gc.DBName)
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
 func (gc *GormConfig) AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&entity.User{})
 	db.AutoMigrate(&entity.Food{})
+	db.AutoMigrate(&entity.Order{})
 }
