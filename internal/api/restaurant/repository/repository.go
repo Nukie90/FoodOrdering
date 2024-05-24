@@ -29,7 +29,7 @@ func (r *RestRepo) AdjustTable(restaurant *entity.Restaurant) error {
 	dbTx := r.restDb.Begin()
 	defer dbTx.Rollback()
 
-	if err := dbTx.Save(restaurant).Error; err != nil {
+	if err := dbTx.Model(&restaurant).Where("name = ?", restaurant.Name).Update("total_table", restaurant.TotalTable).Error; err != nil {
 		return err
 	}
 

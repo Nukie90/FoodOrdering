@@ -4,6 +4,7 @@ import (
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/restaurant/usecase"
 	_ "net/http"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -45,8 +46,10 @@ func (h *RestaurantHandler) AdjustTable(c *fiber.Ctx) error {
 		})
 	}
 
+	params = strings.ReplaceAll(params, "_", " ")
+
 	reqForm.Name = params
-	
+
 	err := h.restaurantUsecase.AdjustTable(&reqForm)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{

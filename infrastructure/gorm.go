@@ -78,4 +78,5 @@ func (gc *GormConfig) AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&entity.User{})
 	db.AutoMigrate(&entity.Food{})
 	db.AutoMigrate(&entity.Order{})
+	db.AutoMigrate(&entity.Restaurant{})
 }
