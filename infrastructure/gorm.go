@@ -1,8 +1,10 @@
 package infrastructure
 
 import (
+	"database/sql"
 	"fmt"
 	"foodOrder/domain/entity"
+	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -10,6 +12,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/spf13/viper"
+
+	_ "github.com/lib/pq"
 )
 
 type GormConfig struct {
@@ -45,14 +49,37 @@ func (gc *GormConfig) Connection() (*gorm.DB, error) {
 }
 
 func (gc *GormConfig) PostgresConnection() (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai", gc.Host, gc.User, gc.Password, gc.DBName, gc.Port)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
+    dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai", gc.Host, gc.User, gc.Password, gc.DBName, gc.Port)
+    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    
+    if err != nil {
+        log.Printf("Error connecting to database: %v", err)
+        
+        // Connect to the default 'postgres' database to create the target database
+        adminDSN := fmt.Sprintf("host=%s user=%s password=%s dbname=postgres port=%d sslmode=disable TimeZone=Asia/Shanghai", gc.Host, gc.User, gc.Password, gc.Port)
+        adminDb, err := sql.Open("postgres", adminDSN)
+        if err != nil {
+            return nil, fmt.Errorf("failed to connect to the admin database: %w", err)
+        }
+        defer adminDb.Close()
 
-	return db, nil
+        // Create the new database
+        _, err = adminDb.Exec("CREATE DATABASE " + gc.DBName)
+        if err != nil {
+            return nil, fmt.Errorf("failed to create database: %w", err)
+        }
+        log.Printf("Database %s created successfully.", gc.DBName)
+
+        // Reconnect to the newly created database using GORM
+        db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+        if err != nil {
+            return nil, fmt.Errorf("failed to connect to the new database: %w", err)
+        }
+    }
+
+    return db, nil
 }
+
 
 func (gc *GormConfig) MySQLConnection() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", gc.User, gc.Password, gc.Host, gc.Port, gc.DBName)

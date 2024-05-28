@@ -9,9 +9,9 @@ import (
 // Food is a struct that represents food entity
 type Order struct {
 	OrderId   uint           `gorm:"primaryKey"`
-	Status   string         `gorm:"not null oneOf=cooking done"`
-	TableNo Table `gorm:"foreignKey:TableNo"`
-	FoodId Food `gorm:"foreignKey:FoodId"`
+	Status    string         `gorm:"not null oneOf=cooking done"`
+	TableNo   uint8          `gorm:"foreignKey:TableNo"`
+	FoodId    Food           `gorm:"foreignKey:FoodId"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
 	DeleteAt  gorm.DeletedAt `gorm:"index"`

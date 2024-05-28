@@ -14,6 +14,10 @@ import (
 	rr "foodOrder/internal/api/restaurant/repository"
 	ru "foodOrder/internal/api/restaurant/usecase"
 
+	gh "foodOrder/internal/api/guestUser/handler"
+	gr "foodOrder/internal/api/guestUser/repository"
+	gu "foodOrder/internal/api/guestUser/usecase"
+
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -22,12 +26,24 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	userHandler := uh.NewUserHandler(uu.NewUserUsecase(ur.NewUserRepo(db)))
 	foodHandler := fh.NewFoodHandler(fu.NewFoodUsecase(fr.NewFoodRepo(db)))
 	restaurantHandler := rh.NewRestaurantHandler(ru.NewRestaurantUsecase(rr.NewRestRepo(db)))
+	guestHandler := gh.NewGuestHandler(gu.NewGuestUsecase(gr.NewGuestRepo(db)))
 
 	app.Post("/register", userHandler.RegisterUser)
 	app.Post("/login", userHandler.Login)
 	app.Get("/users", userHandler.GetAllUsers)
 	app.Get("/menu", foodHandler.GetAllFoods)
-	app.Post("/entertable", )
+
+	guest := app.Group("/:id")
+	{
+		guest.Use(guestHandler.EnterTable)
+		guest.Get("/table", func(c *fiber.Ctx) error {
+			tableNo := c.Locals("tableNo")
+			return c.JSON(fiber.Map{
+				"message": "Welcome to table " + tableNo.(string),
+			})
+		})
+	}
+	
 
 	staff := app.Group("/staff")
 	{
