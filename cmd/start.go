@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -14,8 +14,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func main() {
-	envFlag := flag.String("env", "lite", "a string")
+func Start(name, value, usage string) error {
+	envFlag := flag.String(name, value, usage)
 
 	flag.Parse()
 
@@ -40,4 +40,6 @@ func main() {
 
 	serverConfigStr := serverConfig.Host + ":" + strconv.Itoa(serverConfig.Port)
 	app.Listen(serverConfigStr)
+
+	return nil
 }

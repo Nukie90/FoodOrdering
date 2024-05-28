@@ -3,7 +3,7 @@ package usecase
 import (
 	"foodOrder/domain/entity"
 	"foodOrder/domain/model"
-	"foodOrder/internal/api/user/repository"
+	"foodOrder/internal/api/authUser/repository"
 	"time"
 
 	"github.com/golang-jwt/jwt"

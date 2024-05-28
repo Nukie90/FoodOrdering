@@ -2,7 +2,7 @@ package handler
 
 import (
 	"foodOrder/domain/model"
-	"foodOrder/internal/api/user/usecase"
+	"foodOrder/internal/api/authUser/usecase"
 	_ "net/http"
 
 	"github.com/gofiber/fiber/v2"
