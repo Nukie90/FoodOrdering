@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/guestUser/usecase"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/oklog/ulid/v2"
 )
 
 type GuestHandler struct {
@@ -36,5 +38,9 @@ func (h *GuestHandler) EnterTable(c *fiber.Ctx) error {
     }
 
     c.Locals("tableNo", tableNoStr)
+    //random gen guest id algorithm
+    guestId := ulid.MustNew(ulid.Now(), nil).String()
+    c.Locals("guestId", guestId)
+    fmt.Println(guestId)
     return c.Next()
 }

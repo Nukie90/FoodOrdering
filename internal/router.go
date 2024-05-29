@@ -32,19 +32,7 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	app.Post("/login", userHandler.Login)
 	app.Get("/users", userHandler.GetAllUsers)
 	app.Get("/menu", foodHandler.GetAllFoods)
-
-	guest := app.Group("/:id")
-	{
-		guest.Use(guestHandler.EnterTable)
-		guest.Get("/table", func(c *fiber.Ctx) error {
-			tableNo := c.Locals("tableNo")
-			return c.JSON(fiber.Map{
-				"message": "Welcome to table " + tableNo.(string),
-			})
-		})
-	}
 	
-
 	staff := app.Group("/staff")
 	{
 		staff.Use(validating.JWTAuth(), validating.IsStaff())
@@ -52,6 +40,18 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 		staff.Post("/restaurant", restaurantHandler.CreateRestaurant)
 		staff.Put("update/:name", restaurantHandler.AdjustTable)
 	}
-
+	
+	guest := app.Group("/:id")
+	{
+		guest.Use(guestHandler.EnterTable)
+		guest.Get("/table", func(c *fiber.Ctx) error {
+			tableNo := c.Locals("tableNo")
+			return c.JSON(fiber.Map{
+				"message": "Welcome to table " + tableNo.(string),
+				"guestId": c.Locals("guestId"),
+			})
+		})
+	}
+	
 	
 }

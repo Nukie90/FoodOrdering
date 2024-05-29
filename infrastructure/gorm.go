@@ -106,4 +106,5 @@ func (gc *GormConfig) AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&entity.Food{})
 	db.AutoMigrate(&entity.Order{})
 	db.AutoMigrate(&entity.Restaurant{})
+	db.AutoMigrate(&entity.Cart{})
 }

@@ -28,3 +28,7 @@ func (u *GuestUsecase) EnterTable(table *model.EnterTable) error {
 
 	return nil
 }
+
+func (u *GuestUsecase) SameTableGuest(table *model.EnterTable) error {
+	return nil
+}
