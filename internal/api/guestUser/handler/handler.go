@@ -37,7 +37,7 @@ func (h *GuestHandler) EnterTable(c *fiber.Ctx) error {
         })
     }
 
-    c.Locals("tableNo", tableNoStr)
+    c.Locals("tableNo", tableNo)
     //random gen guest id algorithm
     guestId := ulid.MustNew(ulid.Now(), nil).String()
     c.Locals("guestId", guestId)

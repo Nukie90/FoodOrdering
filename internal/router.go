@@ -5,6 +5,7 @@ import (
 	ur "foodOrder/internal/api/authUser/repository"
 	uu "foodOrder/internal/api/authUser/usecase"
 	"foodOrder/internal/api/validating"
+	"strconv"
 
 	fh "foodOrder/internal/api/food/handler"
 	fr "foodOrder/internal/api/food/repository"
@@ -18,6 +19,10 @@ import (
 	gr "foodOrder/internal/api/guestUser/repository"
 	gu "foodOrder/internal/api/guestUser/usecase"
 
+	ch "foodOrder/internal/api/cart/handler"
+	cr "foodOrder/internal/api/cart/repository"
+	cu "foodOrder/internal/api/cart/usecase"
+
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -27,6 +32,7 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	foodHandler := fh.NewFoodHandler(fu.NewFoodUsecase(fr.NewFoodRepo(db)))
 	restaurantHandler := rh.NewRestaurantHandler(ru.NewRestaurantUsecase(rr.NewRestRepo(db)))
 	guestHandler := gh.NewGuestHandler(gu.NewGuestUsecase(gr.NewGuestRepo(db)))
+	cartHandler := ch.NewCartHandler(cu.NewCartUsecase(cr.NewCartRepo(db)))
 
 	app.Post("/register", userHandler.RegisterUser)
 	app.Post("/login", userHandler.Login)
@@ -47,10 +53,11 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 		guest.Get("/table", func(c *fiber.Ctx) error {
 			tableNo := c.Locals("tableNo")
 			return c.JSON(fiber.Map{
-				"message": "Welcome to table " + tableNo.(string),
+				"message": "Welcome to table " + strconv.Itoa(tableNo.(int)),
 				"guestId": c.Locals("guestId"),
 			})
 		})
+		guest.Post("/addtocart", cartHandler.AddToCart)
 	}
 	
 	

@@ -27,5 +27,13 @@ func (Cart) TableName() string {
 // BeforeCreate is a function to generate ULID before creating a new record
 func (c *Cart) BeforeCreate(tx *gorm.DB) (err error) {
 	c.ID = uint(time.Now().Unix())
+	c.CreatedAt = time.Now()
+	c.UpdatedAt = time.Now()
+	return
+}
+
+// BeforeUpdate is a function to update the updated_at field
+func (c *Cart) BeforeUpdate(tx *gorm.DB) (err error) {
+	c.UpdatedAt = time.Now()
 	return
 }

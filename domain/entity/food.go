@@ -25,6 +25,8 @@ func (Food) TableName() string {
 // BeforeCreate is a function to generate ULID before creating a new record
 func (f *Food) BeforeCreate(tx *gorm.DB) (err error) {
 	f.FoodId = uint(time.Now().Unix())
+	f.CreatedAt = time.Now()
+	f.UpdatedAt = time.Now()
 	return
 }
 

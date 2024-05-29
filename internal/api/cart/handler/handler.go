@@ -25,7 +25,8 @@ func (h *CartHandler) AddToCart(c *fiber.Ctx) error {
 	}
 
 	reqForm.UserOrder = c.Locals("guestId").(string)
-	reqForm.TableNo = c.Locals("tableNo").(uint8)
+	oldTableno := c.Locals("tableNo")
+	reqForm.TableNo = uint8(oldTableno.(int))
 
 	err := h.cartUsecase.AddToCart(&reqForm)
 	if err != nil {

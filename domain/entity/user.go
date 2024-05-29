@@ -39,6 +39,9 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if u.Type != Cooker && u.Type != Staff {
 		return errors.New("invalid user type")
     }
+
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
 	return
 }
 
