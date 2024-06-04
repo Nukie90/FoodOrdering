@@ -83,6 +83,6 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Success",
-		"token":    token,
+		"token":   token,
 	})
 }

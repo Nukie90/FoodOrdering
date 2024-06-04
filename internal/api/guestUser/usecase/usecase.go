@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/guestUser/repository"
 )
@@ -20,7 +19,6 @@ func (u *GuestUsecase) EnterTable(table *model.EnterTable) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(table.TableNo)
 
 	if table.TableNo > tableAmount {
 		return errors.New("table number is invalid")

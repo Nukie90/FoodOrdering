@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"math/rand"
 	"time"
 
 	"github.com/oklog/ulid/v2"
@@ -33,7 +34,9 @@ func (User) TableName() string {
 
 // BeforeCreate is a function to generate ULID before creating a new record
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	ulid := ulid.MustNew(ulid.Now(), nil)
+	t := time.Now()
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
+	ulid:= ulid.MustNew(ulid.Now(), entropy)
 	u.ID = ulid
 
 	if u.Type != Cooker && u.Type != Staff {

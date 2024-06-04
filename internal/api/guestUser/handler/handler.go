@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/guestUser/usecase"
 	"strconv"
@@ -41,6 +40,5 @@ func (h *GuestHandler) EnterTable(c *fiber.Ctx) error {
     //random gen guest id algorithm
     guestId := ulid.MustNew(ulid.Now(), nil).String()
     c.Locals("guestId", guestId)
-    fmt.Println(guestId)
     return c.Next()
 }

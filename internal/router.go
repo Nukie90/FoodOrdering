@@ -19,9 +19,9 @@ import (
 	gr "foodOrder/internal/api/guestUser/repository"
 	gu "foodOrder/internal/api/guestUser/usecase"
 
-	ch "foodOrder/internal/api/cart/handler"
-	cr "foodOrder/internal/api/cart/repository"
-	cu "foodOrder/internal/api/cart/usecase"
+	oh "foodOrder/internal/api/ordering/handler"
+	or "foodOrder/internal/api/ordering/repository"
+	ou "foodOrder/internal/api/ordering/usecase"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -32,7 +32,7 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	foodHandler := fh.NewFoodHandler(fu.NewFoodUsecase(fr.NewFoodRepo(db)))
 	restaurantHandler := rh.NewRestaurantHandler(ru.NewRestaurantUsecase(rr.NewRestRepo(db)))
 	guestHandler := gh.NewGuestHandler(gu.NewGuestUsecase(gr.NewGuestRepo(db)))
-	cartHandler := ch.NewCartHandler(cu.NewCartUsecase(cr.NewCartRepo(db)))
+	orderingHandler := oh.NewOrderingHandler(ou.NewOrderingUsecase(or.NewOrderingRepo(db)))
 
 	app.Post("/register", userHandler.RegisterUser)
 	app.Post("/login", userHandler.Login)
@@ -57,7 +57,9 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 				"guestId": c.Locals("guestId"),
 			})
 		})
-		guest.Post("/addtocart", cartHandler.AddToCart)
+		guest.Post("/addtocart", orderingHandler.AddToCart)
+		guest.Get("/cart", orderingHandler.GetCart)
+		guest.Post("/submitcart", orderingHandler.SubmitCart)
 	}
 	
 	

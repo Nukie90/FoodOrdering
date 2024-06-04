@@ -40,6 +40,8 @@ func (f *FoodRepo) GetAllFoods() ([]model.FoodDetail, error) {
 			Name:        food.Name,
 			Description: food.Description,
 			Price:       food.Price,
+			CreatedAt:   food.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt:   food.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 
