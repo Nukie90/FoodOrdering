@@ -10,7 +10,7 @@ import (
 
 // Food is a struct that represents food entity
 type Order struct {
-	OrderId   ulid.ULID           `gorm:"primaryKey"`
+	OrderId   ulid.ULID      `gorm:"primaryKey"`
 	Status    string         `gorm:"not null"`
 	TableNo   uint8          `gorm:"foreignKey:TableNo"`
 	FoodId    uint           `gorm:"foreignKey:FoodId"`
@@ -29,11 +29,11 @@ func (Order) TableName() string {
 func (o *Order) BeforeCreate(tx *gorm.DB) (err error) {
 	t := time.Now()
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-	ulid:= ulid.MustNew(ulid.Now(), entropy)
+	ulid := ulid.MustNew(ulid.Now(), entropy)
 	o.OrderId = ulid
 	o.CreatedAt = time.Now()
 	o.UpdatedAt = time.Now()
-	
+
 	if o.Status == "" {
 		o.Status = "cooking"
 	}

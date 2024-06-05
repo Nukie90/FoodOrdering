@@ -4,6 +4,7 @@ import (
 	"errors"
 	"foodOrder/domain/entity"
 
+	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -42,6 +43,10 @@ func (r *OrderingRepo) CartDetail(tableNo uint8) ([]entity.Cart, error) {
 		return nil, err
 	}
 
+	if len(cart) == 0 {
+		return nil, errors.New("cart is empty")
+	}
+
 	return cart, nil
 }
 
@@ -68,7 +73,7 @@ func (r *OrderingRepo) DeleteCart(tableNo uint8) error {
 	return dbTx.Commit().Error
 }
 
-func (r *OrderingRepo) SubmitCart(detail []entity.Order) error {
+func (r *OrderingRepo)SubmitCart(detail []entity.Order) error {
 	dbTx := r.db.Begin()
 	defer dbTx.Rollback()
 
@@ -81,5 +86,43 @@ func (r *OrderingRepo) SubmitCart(detail []entity.Order) error {
 	return dbTx.Commit().Error
 }
 
+func (r *OrderingRepo) TableAmount() (uint8, error) {
+	dbTx := r.db.Begin()
+	defer dbTx.Rollback()
 
-	
+	var tableAmount uint8
+	if err := dbTx.Model(&entity.Restaurant{}).Select("total_table").First(&tableAmount).Error; err != nil {
+		return 0, err
+	}
+
+	return tableAmount, nil
+}
+
+func (r *OrderingRepo) GetOrder(tableNo uint8) ([]entity.Order, error) {
+	var order []entity.Order
+	if err := r.db.Where("table_no = ?", tableNo).Find(&order).Error; err != nil {
+		return nil, err
+	}
+
+	return order, nil
+}
+
+func (r *OrderingRepo) GetOrderByID(orderId ulid.ULID) ([]entity.Order, error) {
+	var order []entity.Order
+	if err := r.db.Where("order_id = ?", orderId).Find(&order).Error; err != nil {
+		return nil, err
+	}
+
+	return order, nil
+}
+
+func (r *OrderingRepo) UpdateOrder(order entity.Order) error {
+	dbTx := r.db.Begin()
+	defer dbTx.Rollback()
+
+	if err := dbTx.Model(&entity.Order{}).Where("order_id = ?", order.OrderId).Update("status", order.Status).Error; err != nil {
+		return err
+	}
+
+	return dbTx.Commit().Error
+}

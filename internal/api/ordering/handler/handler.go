@@ -68,3 +68,54 @@ func (h *OrderingHandler) SubmitCart(c *fiber.Ctx) error {
 		"message": "Success",
 	})
 }
+
+func (h *OrderingHandler) ReceiveOrder(c *fiber.Ctx) error {
+	allOrder, err := h.orderingUsecase.ReceiveOrder()
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Success",
+		"data":    allOrder,
+	})
+
+}
+
+func (h *OrderingHandler) SendRobot(c *fiber.Ctx) error {
+	var reqForm model.SendRobotRequest
+
+	if err := c.BodyParser(&reqForm); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Bad Request",
+		})
+	}
+
+	tableNo, err := h.orderingUsecase.SendRobot(&reqForm)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Robot is on the way!",
+		"tableNo": tableNo,
+	})
+}
+
+func (h *OrderingHandler) ReceiveRobot(c *fiber.Ctx) error {
+	tableNo := c.Locals("tableNo").(int)
+	err := h.orderingUsecase.ReceiveRobot(uint8(tableNo))
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Robot has arrived!",
+	})
+}
