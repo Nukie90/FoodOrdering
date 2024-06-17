@@ -16,6 +16,18 @@ func NewOrderingRepo(db *gorm.DB) *OrderingRepo {
 	return &OrderingRepo{db: db}
 }
 
+func (r *OrderingRepo) GetTableNo(tableID ulid.ULID) (uint8, error) {
+	dbTx := r.db.Begin()
+	defer dbTx.Rollback()
+
+	var table entity.TablePreference
+	if err := dbTx.Where("preference_id = ?", tableID).First(&table).Error; err != nil {
+		return 0, err
+	}
+
+	return table.TableNo, nil
+}
+
 func (r *OrderingRepo) AddToCart(cart *entity.Cart) error {
 	err := r.db.Create(cart).Error
 	if err != nil {
@@ -86,18 +98,6 @@ func (r *OrderingRepo)SubmitCart(detail []entity.Order) error {
 	return dbTx.Commit().Error
 }
 
-func (r *OrderingRepo) TableAmount() (uint8, error) {
-	dbTx := r.db.Begin()
-	defer dbTx.Rollback()
-
-	var tableAmount uint8
-	if err := dbTx.Model(&entity.Restaurant{}).Select("total_table").First(&tableAmount).Error; err != nil {
-		return 0, err
-	}
-
-	return tableAmount, nil
-}
-
 func (r *OrderingRepo) GetOrder(tableNo uint8) ([]entity.Order, error) {
 	var order []entity.Order
 	if err := r.db.Where("table_no = ?", tableNo).Find(&order).Error; err != nil {
@@ -125,4 +125,13 @@ func (r *OrderingRepo) UpdateOrder(order entity.Order) error {
 	}
 
 	return dbTx.Commit().Error
+}
+
+func (r *OrderingRepo) TableAmount() (uint8, error) {
+	var totalTable uint8
+	if err := r.db.Table("tables").Select("COUNT(table_no)").Find(&totalTable).Error; err != nil {
+		return 0, err
+	}
+
+	return totalTable, nil
 }

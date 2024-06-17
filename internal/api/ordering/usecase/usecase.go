@@ -19,32 +19,46 @@ func NewOrderingUsecase(repo *repository.OrderingRepo) *OrderingUsecase {
 }
 
 func (u *OrderingUsecase) AddToCart(cart *model.AddToCart) error {
-	GuestID, err := ulid.Parse(cart.UserOrder)
+	tableID, err := ulid.Parse(cart.TableID)
 	if err != nil {
-		return errors.New("failed to parse guest id")
+		return err
 	}
 
-	foodId, err := u.orderingRepo.GetFoodIdByName(cart.FoodName)
+	tableNo, err := u.orderingRepo.GetTableNo(tableID)
 	if err != nil {
-		return errors.New("failed to get food id")
+		return err
+	}
+
+	foodID, err := u.orderingRepo.GetFoodIdByName(cart.FoodName)
+	if err != nil {
+		return err
 	}
 
 	dbCart := &entity.Cart{
-		TableNo:   cart.TableNo,
-		UserOrder: GuestID,
-		FoodId:    foodId,
-		Quantity:  cart.Quantity,
+		TableNo:  tableNo,
+		FoodId:   foodID,
+		Quantity: cart.Quantity,
 	}
 
 	err = u.orderingRepo.AddToCart(dbCart)
 	if err != nil {
-		return err
+		return errors.New("failed to add to cart")
 	}
 
 	return nil
 }
 
-func (u *OrderingUsecase) CartDetail(tableNo uint8) ([]model.CartDetail, error) {
+func (u *OrderingUsecase) GetCart(tableID string) ([]model.CartDetail, error) {
+	tableULID, err := ulid.Parse(tableID)
+	if err != nil {
+		return nil, err
+	}
+
+	tableNo, err := u.orderingRepo.GetTableNo(tableULID)
+	if err != nil {
+		return nil, err
+	}
+
 	cart, err := u.orderingRepo.CartDetail(tableNo)
 	if err != nil {
 		return nil, err
@@ -67,7 +81,19 @@ func (u *OrderingUsecase) CartDetail(tableNo uint8) ([]model.CartDetail, error) 
 	return cartDetail, nil
 }
 
-func (u *OrderingUsecase) SubmitCart(tableNo uint8) error {
+func (u *OrderingUsecase) SubmitCart(tableID string) error {
+	tableULID, err := ulid.Parse(tableID)
+	if err != nil {
+		return err
+	}
+
+	tableNo, err := u.orderingRepo.GetTableNo(tableULID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(tableNo)
+
 	cart, err := u.orderingRepo.CartDetail(tableNo)
 	if err != nil {
 		return err

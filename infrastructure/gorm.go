@@ -75,6 +75,9 @@ func (gc *GormConfig) PostgresConnection() (*gorm.DB, error) {
         if err != nil {
             return nil, fmt.Errorf("failed to connect to the new database: %w", err)
         }
+
+		gc.AutoMigrate(db)
+		MockData(db)
     }
 
     return db, nil
@@ -105,6 +108,38 @@ func (gc *GormConfig) AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&entity.User{})
 	db.AutoMigrate(&entity.Food{})
 	db.AutoMigrate(&entity.Order{})
-	db.AutoMigrate(&entity.Restaurant{})
+	db.AutoMigrate(&entity.TablePreference{})
 	db.AutoMigrate(&entity.Cart{})
+	db.AutoMigrate(&entity.Table{})
+}
+
+func MockData(db *gorm.DB) {
+	CreateStaff(db)
+	CreateAdmin(db)
+	InitialTable(db)
+}
+
+func CreateStaff(db *gorm.DB) {
+	db.Create(&entity.User{
+		Username: "staff",
+		Password: "123",
+		Type:     "staff",
+	})
+}
+
+func CreateAdmin(db *gorm.DB) {
+	db.Create(&entity.User{
+		Username: "cooker",
+		Password: "123",
+		Type:     "cooker",
+	})
+}
+
+func InitialTable(db *gorm.DB) {
+	for i := 1; i <= 10; i++ {
+		db.Create(&entity.Table{
+			TableNo: uint8(i),
+			Status:  "available",
+		})
+	}
 }

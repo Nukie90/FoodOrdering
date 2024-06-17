@@ -1,11 +1,10 @@
 package internal
 
 import (
-	uh "foodOrder/internal/api/authUser/handler"
-	ur "foodOrder/internal/api/authUser/repository"
-	uu "foodOrder/internal/api/authUser/usecase"
+	uh "foodOrder/internal/api/user/handler"
+	ur "foodOrder/internal/api/user/repository"
+	uu "foodOrder/internal/api/user/usecase"
 	"foodOrder/internal/api/validating"
-	"strconv"
 
 	fh "foodOrder/internal/api/food/handler"
 	fr "foodOrder/internal/api/food/repository"
@@ -14,10 +13,6 @@ import (
 	rh "foodOrder/internal/api/restaurant/handler"
 	rr "foodOrder/internal/api/restaurant/repository"
 	ru "foodOrder/internal/api/restaurant/usecase"
-
-	gh "foodOrder/internal/api/guestUser/handler"
-	gr "foodOrder/internal/api/guestUser/repository"
-	gu "foodOrder/internal/api/guestUser/usecase"
 
 	oh "foodOrder/internal/api/ordering/handler"
 	or "foodOrder/internal/api/ordering/repository"
@@ -31,43 +26,73 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	userHandler := uh.NewUserHandler(uu.NewUserUsecase(ur.NewUserRepo(db)))
 	foodHandler := fh.NewFoodHandler(fu.NewFoodUsecase(fr.NewFoodRepo(db)))
 	restaurantHandler := rh.NewRestaurantHandler(ru.NewRestaurantUsecase(rr.NewRestRepo(db)))
-	guestHandler := gh.NewGuestHandler(gu.NewGuestUsecase(gr.NewGuestRepo(db)))
 	orderingHandler := oh.NewOrderingHandler(ou.NewOrderingUsecase(or.NewOrderingRepo(db)))
 
-	app.Post("/register", userHandler.RegisterUser)
-	app.Post("/login", userHandler.Login)
-	app.Get("/users", userHandler.GetAllUsers)
-	app.Get("/menu", foodHandler.GetAllFoods)
+	// app.Post("/register", userHandler.RegisterUser)
+	// app.Post("/login", userHandler.Login)
+	// app.Get("/users", userHandler.GetAllUsers)
+	// app.Get("/menu", foodHandler.GetAllFoods)
 	
-	staff := app.Group("/staff")
-	{
-		staff.Use(validating.JWTAuth(), validating.IsStaff())
-		staff.Post("/add", foodHandler.CreateFood)
-		staff.Post("/restaurant", restaurantHandler.CreateRestaurant)
-		staff.Put("update/:name", restaurantHandler.AdjustTable)
-	}
+	// staff := app.Group("/staff")
+	// {
+	// 	staff.Use(validating.JWTAuth(), validating.IsStaff())
+	// 	staff.Post("/foods", foodHandler.CreateFood)
+	// 	staff.Post("/restaurant", restaurantHandler.CreateRestaurant)
+	// 	staff.Put("restaurant/{name}", restaurantHandler.AdjustTable)
+	// 	staff.Post("/enter", restaurantHandler.CustomerEnter)
+	// }
 
-	cooker := app.Group("/cooker")
-	{
-		cooker.Use(validating.JWTAuth(), validating.IsCooker())
-		cooker.Get("/orders", orderingHandler.ReceiveOrder)
-		cooker.Post("/sendrobot", orderingHandler.SendRobot)
-	}
+	// cooker := app.Group("/cooker")
+	// {
+	// 	cooker.Use(validating.JWTAuth(), validating.IsCooker())
+	// 	cooker.Get("/orders", orderingHandler.ReceiveOrder)
+	// 	cooker.Post("/robot", orderingHandler.SendRobot)
+	// }
 	
-	guest := app.Group("/:id")
-	{
-		guest.Use(guestHandler.EnterTable)
-		guest.Get("/table", func(c *fiber.Ctx) error {
-			tableNo := c.Locals("tableNo")
-			return c.JSON(fiber.Map{
-				"message": "Welcome to table " + strconv.Itoa(tableNo.(int)),
-				"guestId": c.Locals("guestId"),
-			})
-		})
-		guest.Post("/addtocart", orderingHandler.AddToCart)
-		guest.Get("/cart", orderingHandler.GetCart)
-		guest.Post("/submitcart", orderingHandler.SubmitCart)
+	// guest := app.Group("/:id")
+	// {
+	// 	guest.Post("/addtocart", orderingHandler.AddToCart)
+	// 	guest.Get("/cart", orderingHandler.GetCart)
+	// 	guest.Post("/submitcart", orderingHandler.SubmitCart)
 
-		guest.Get("receive", orderingHandler.ReceiveRobot)
+	// 	guest.Get("robot/", orderingHandler.ReceiveRobot)
+	// }
+
+	//new route
+	api := app.Group("/api")
+	{
+		v1 := api.Group("/v1")
+		{
+			v1.Post("/register", userHandler.RegisterUser)
+			v1.Post("/login", userHandler.Login)
+			v1.Get("/users", userHandler.GetAllUsers)
+			v1.Get("/foods", foodHandler.GetAllFoods)
+
+			staff := v1.Group("/staff")
+			{
+				staff.Use(validating.JWTAuth(), validating.IsStaff())
+				staff.Post("/foods", foodHandler.CreateFood)
+				staff.Post("/table-inits", restaurantHandler.InitialTable)
+				staff.Get("/tables", restaurantHandler.GetAllTable)
+				staff.Post("/tables", restaurantHandler.GiveCustomerTable)
+			}
+
+			cooker := v1.Group("/cooker")
+			{
+				cooker.Use(validating.JWTAuth(), validating.IsCooker())
+				cooker.Get("/orders", orderingHandler.ReceiveOrder)
+				cooker.Post("/robots", orderingHandler.SendRobot)
+			}
+			
+			customer := v1.Group("/customer")
+			{
+				customer.Post("/carts/:tableID", orderingHandler.AddToCart)
+				customer.Get("/carts/:tableID", orderingHandler.GetCart)
+				customer.Post("/orders/:tableID", orderingHandler.SubmitCart)
+				customer.Get("/robots", orderingHandler.ReceiveRobot)
+			}
+		}
 	}
 }
+
+//new code

@@ -3,7 +3,6 @@ package entity
 import (
 	"time"
 
-	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -11,7 +10,6 @@ import (
 type Cart struct {
 	ID        uint      `gorm:"primaryKey"`
 	TableNo   uint8     `gorm:"foreignKey:TableNo"`
-	UserOrder ulid.ULID `gorm:"foreignKey:UserOrder"`
 	FoodId    uint      `gorm:"foreignKey:FoodId"`
 	Quantity  uint8     `gorm:"not null"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`

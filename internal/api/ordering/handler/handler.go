@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/ordering/usecase"
 	_ "net/http"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/oklog/ulid/v2"
 )
 
 type OrderingHandler struct {
@@ -17,16 +19,17 @@ func NewOrderingHandler(usecase *usecase.OrderingUsecase) *OrderingHandler {
 }
 
 func (h *OrderingHandler) AddToCart(c *fiber.Ctx) error {
+	params := c.Params("tableID")
+
 	var reqForm model.AddToCart
+
+	reqForm.TableID = params
+
 	if err := c.BodyParser(&reqForm); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Bad Request",
 		})
 	}
-
-	reqForm.UserOrder = c.Locals("guestId").(string)
-	oldTableno := c.Locals("tableNo")
-	reqForm.TableNo = uint8(oldTableno.(int))
 
 	err := h.orderingUsecase.AddToCart(&reqForm)
 	if err != nil {
@@ -41,23 +44,28 @@ func (h *OrderingHandler) AddToCart(c *fiber.Ctx) error {
 }
 
 func (h *OrderingHandler) GetCart(c *fiber.Ctx) error {
-	tableNo := c.Locals("tableNo").(int)
-	cart, err := h.orderingUsecase.CartDetail(uint8(tableNo))
+	tableID := c.Params("tableID")
+	
+	tableIDString := ulid.MustParse(tableID).String()
+
+	cart, err := h.orderingUsecase.GetCart(tableIDString)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 
-	return c.Status(200).JSON(fiber.Map{
-		"message": "Success",
-		"data":    cart,
-	})
+	return c.Status(200).JSON(cart)
 }
 
 func (h *OrderingHandler) SubmitCart(c *fiber.Ctx) error {
-	tableNo := c.Locals("tableNo").(int)
-	err := h.orderingUsecase.SubmitCart(uint8(tableNo))
+	tableID := c.Params("tableID")
+	
+	tableIDString := ulid.MustParse(tableID).String()
+
+	fmt.Println(tableIDString)
+
+	err := h.orderingUsecase.SubmitCart(tableIDString)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": err.Error(),
@@ -70,18 +78,14 @@ func (h *OrderingHandler) SubmitCart(c *fiber.Ctx) error {
 }
 
 func (h *OrderingHandler) ReceiveOrder(c *fiber.Ctx) error {
-	allOrder, err := h.orderingUsecase.ReceiveOrder()
+	allOrders, err := h.orderingUsecase.ReceiveOrder()
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 
-	return c.Status(200).JSON(fiber.Map{
-		"message": "Success",
-		"data":    allOrder,
-	})
-
+	return c.Status(200).JSON(allOrders)
 }
 
 func (h *OrderingHandler) SendRobot(c *fiber.Ctx) error {

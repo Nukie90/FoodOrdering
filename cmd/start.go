@@ -29,7 +29,6 @@ func Start(name, value, usage string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dbConfig.AutoMigrate(db)
 
 	app := fiber.New()
 

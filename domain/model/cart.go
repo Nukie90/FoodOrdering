@@ -3,8 +3,7 @@ package model
 type AddToCart struct {
 	FoodName string `json:"food_name"`
 	Quantity uint8    `json:"quantity"`
-	UserOrder string `json:"user_order"`
-	TableNo uint8 `json:"table_no"`
+	TableID string `json:"table_id"`
 }
 
 type CartDetail struct {

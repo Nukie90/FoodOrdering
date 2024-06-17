@@ -11,6 +11,4 @@ type FoodDetail struct {
 	Name        string `json:"name"`
 	Description string `json:"desc"`
 	Price       int    `json:"price"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
 }

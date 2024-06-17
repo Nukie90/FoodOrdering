@@ -4,7 +4,6 @@ import (
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/restaurant/usecase"
 	_ "net/http"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,15 +16,15 @@ func NewRestaurantHandler(usecase *usecase.RestaurantUsecase) *RestaurantHandler
 	return &RestaurantHandler{restaurantUsecase: usecase}
 }
 
-func (h *RestaurantHandler) CreateRestaurant(c *fiber.Ctx) error {
-	var reqForm model.CreateRestaurant
+func (h *RestaurantHandler) InitialTable(c *fiber.Ctx) error {
+	var reqForm model.InitialTable
 	if err := c.BodyParser(&reqForm); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Bad Request",
 		})
 	}
 
-	err := h.restaurantUsecase.CreateRestaurant(&reqForm)
+	err := h.restaurantUsecase.InitialTable(&reqForm)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message1": err.Error(),
@@ -37,20 +36,26 @@ func (h *RestaurantHandler) CreateRestaurant(c *fiber.Ctx) error {
 	})
 }
 
-func (h *RestaurantHandler) AdjustTable(c *fiber.Ctx) error {
-	params := c.Params("name")
-	var reqForm model.AdjustTable
+func (h *RestaurantHandler) GetAllTable(c *fiber.Ctx) error {
+	tables, err := h.restaurantUsecase.GetAllTable()
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(tables)
+}
+
+func (h *RestaurantHandler) GiveCustomerTable(c *fiber.Ctx) error {
+	var reqForm model.GiveTable
 	if err := c.BodyParser(&reqForm); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Bad Request",
 		})
 	}
 
-	params = strings.ReplaceAll(params, "_", " ")
-
-	reqForm.Name = params
-
-	err := h.restaurantUsecase.AdjustTable(&reqForm)
+	ID, err := h.restaurantUsecase.GiveCustomerTable(&reqForm)
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message1": err.Error(),
@@ -59,5 +64,8 @@ func (h *RestaurantHandler) AdjustTable(c *fiber.Ctx) error {
 
 	return c.Status(200).JSON(fiber.Map{
 		"message": "Success",
+		"PereferenceID": ID.String(),
 	})
+
+
 }
