@@ -18,6 +18,10 @@ import (
 	or "foodOrder/internal/api/ordering/repository"
 	ou "foodOrder/internal/api/ordering/usecase"
 
+	ph "foodOrder/internal/api/payment/handler"
+	pr "foodOrder/internal/api/payment/repository"
+	pu "foodOrder/internal/api/payment/usecase"
+
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -27,36 +31,8 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	foodHandler := fh.NewFoodHandler(fu.NewFoodUsecase(fr.NewFoodRepo(db)))
 	restaurantHandler := rh.NewRestaurantHandler(ru.NewRestaurantUsecase(rr.NewRestRepo(db)))
 	orderingHandler := oh.NewOrderingHandler(ou.NewOrderingUsecase(or.NewOrderingRepo(db)))
+	paymentHandler := ph.NewPaymentHandler(pu.NewPaymentUsecase(pr.NewPaymentRepo(db)))
 
-	// app.Post("/register", userHandler.RegisterUser)
-	// app.Post("/login", userHandler.Login)
-	// app.Get("/users", userHandler.GetAllUsers)
-	// app.Get("/menu", foodHandler.GetAllFoods)
-	
-	// staff := app.Group("/staff")
-	// {
-	// 	staff.Use(validating.JWTAuth(), validating.IsStaff())
-	// 	staff.Post("/foods", foodHandler.CreateFood)
-	// 	staff.Post("/restaurant", restaurantHandler.CreateRestaurant)
-	// 	staff.Put("restaurant/{name}", restaurantHandler.AdjustTable)
-	// 	staff.Post("/enter", restaurantHandler.CustomerEnter)
-	// }
-
-	// cooker := app.Group("/cooker")
-	// {
-	// 	cooker.Use(validating.JWTAuth(), validating.IsCooker())
-	// 	cooker.Get("/orders", orderingHandler.ReceiveOrder)
-	// 	cooker.Post("/robot", orderingHandler.SendRobot)
-	// }
-	
-	// guest := app.Group("/:id")
-	// {
-	// 	guest.Post("/addtocart", orderingHandler.AddToCart)
-	// 	guest.Get("/cart", orderingHandler.GetCart)
-	// 	guest.Post("/submitcart", orderingHandler.SubmitCart)
-
-	// 	guest.Get("robot/", orderingHandler.ReceiveRobot)
-	// }
 
 	//new route
 	api := app.Group("/api")
@@ -75,6 +51,7 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 				staff.Post("/table-inits", restaurantHandler.InitialTable)
 				staff.Get("/tables", restaurantHandler.GetAllTable)
 				staff.Post("/tables", restaurantHandler.GiveCustomerTable)
+				staff.Post("/payments", paymentHandler.CreatePayment)
 			}
 
 			cooker := v1.Group("/cooker")
@@ -83,13 +60,13 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 				cooker.Get("/orders", orderingHandler.ReceiveOrder)
 				cooker.Post("/robots", orderingHandler.SendRobot)
 			}
-			
+
 			customer := v1.Group("/customer")
 			{
 				customer.Post("/carts/:tableID", orderingHandler.AddToCart)
 				customer.Get("/carts/:tableID", orderingHandler.GetCart)
 				customer.Post("/orders/:tableID", orderingHandler.SubmitCart)
-				customer.Get("/robots", orderingHandler.ReceiveRobot)
+				customer.Get("/robots/:tableNo", orderingHandler.ReceiveRobot)
 			}
 		}
 	}

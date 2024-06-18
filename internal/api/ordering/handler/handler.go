@@ -5,6 +5,7 @@ import (
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/ordering/usecase"
 	_ "net/http"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/oklog/ulid/v2"
@@ -111,8 +112,15 @@ func (h *OrderingHandler) SendRobot(c *fiber.Ctx) error {
 }
 
 func (h *OrderingHandler) ReceiveRobot(c *fiber.Ctx) error {
-	tableNo := c.Locals("tableNo").(int)
-	err := h.orderingUsecase.ReceiveRobot(uint8(tableNo))
+	tableNo := c.Params("tableNo")
+	tableNoUint, err := strconv.ParseUint(tableNo, 10, 8)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Invalid tableNo",
+		})
+	}
+
+	err = h.orderingUsecase.ReceiveRobot(uint8(tableNoUint))
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": err.Error(),

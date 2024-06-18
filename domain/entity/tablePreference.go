@@ -13,6 +13,7 @@ import (
 type TablePreference struct {
 	TableNo  uint8           `gorm:"primaryKey"`
 	PreferenceID ulid.ULID   `gorm:"primaryKey"`
+	Status   string          `gorm:"not null"`
 	CreatedAt time.Time     `gorm:"autoCreateTime"`
 	UpdatedAt time.Time     `gorm:"autoUpdateTime"`
 	DeleteAt  gorm.DeletedAt `gorm:"index"`
@@ -28,6 +29,8 @@ func (t *TablePreference) BeforeCreate(tx *gorm.DB) (err error) {
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(time.Now().UnixNano())), 0)
 	ulid := ulid.MustNew(ulid.Now(), entropy)
 	t.PreferenceID = ulid
+
+	t.Status = "active"
 
 	t.CreatedAt = time.Now()
 	t.UpdatedAt = time.Now()
