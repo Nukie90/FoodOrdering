@@ -52,6 +52,8 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 				staff.Get("/tables", restaurantHandler.GetAllTable)
 				staff.Post("/tables", restaurantHandler.GiveCustomerTable)
 				staff.Post("/payments", paymentHandler.CreatePayment)
+				staff.Get("/orders", orderingHandler.ReceiveOrder)
+				staff.Put("/orders", orderingHandler.UpdateOrder)
 			}
 
 			cooker := v1.Group("/cooker")
@@ -67,6 +69,7 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 				customer.Get("/carts/:tableID", orderingHandler.GetCart)
 				customer.Post("/orders/:tableID", orderingHandler.SubmitCart)
 				customer.Get("/robots/:tableNo", orderingHandler.ReceiveRobot)
+				customer.Post("/payments/:id", paymentHandler.PayBill)
 			}
 		}
 	}

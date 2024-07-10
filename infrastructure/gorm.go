@@ -101,6 +101,9 @@ func (gc *GormConfig) SQLiteConnection() (*gorm.DB, error) {
 		return nil, err
 	}
 
+	gc.AutoMigrate(db)
+	MockData(db)
+
 	return db, nil
 }
 
@@ -111,6 +114,7 @@ func (gc *GormConfig) AutoMigrate(db *gorm.DB) {
 	db.AutoMigrate(&entity.TablePreference{})
 	db.AutoMigrate(&entity.Cart{})
 	db.AutoMigrate(&entity.Table{})
+	db.AutoMigrate(&entity.Payment{})
 }
 
 func MockData(db *gorm.DB) {

@@ -13,6 +13,7 @@ type Order struct {
 	OrderId   ulid.ULID      `gorm:"primaryKey"`
 	Status    string         `gorm:"not null"`
 	TableNo   uint8          `gorm:"foreignKey:TableNo"`
+	PreferenceID ulid.ULID   `gorm:"foreignKey:PreferenceID"`
 	FoodId    uint           `gorm:"foreignKey:FoodId"`
 	Quantity  uint8          `gorm:"not null"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`

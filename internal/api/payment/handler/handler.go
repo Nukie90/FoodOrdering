@@ -32,8 +32,30 @@ func (h *PaymentHandler) CreatePayment(c *fiber.Ctx) error {
 	}
 
 	return c.Status(200).JSON(fiber.Map{
-		"message": "Success",
-		"data":    bill,
+		"Bill":    bill,
 	})
 }
 
+func (h *PaymentHandler) PayBill(c *fiber.Ctx) error {
+	preferenceID := c.Params("id")
+
+	var reqForm model.PayBill
+	if err := c.BodyParser(&reqForm); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Bad Request",
+		})
+	}
+
+	changes, bill, err := h.paymentUsecase.PayBill(preferenceID, &reqForm)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Success",
+		"changes": changes,
+		"bill":    bill,
+	})
+}

@@ -131,3 +131,24 @@ func (h *OrderingHandler) ReceiveRobot(c *fiber.Ctx) error {
 		"message": "Robot has arrived!",
 	})
 }
+
+func (h *OrderingHandler) UpdateOrder(c *fiber.Ctx) error {
+	var reqForm model.UpdateOrder
+
+	if err := c.BodyParser(&reqForm); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Bad Request",
+		})
+	}
+
+	err := h.orderingUsecase.UpdateOrder(&reqForm)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Success",
+	})
+}

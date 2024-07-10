@@ -12,7 +12,7 @@ import (
 type Payment struct {
 	ReceiptID ulid.ULID `gorm:"primaryKey"`
 	PreferenceID ulid.ULID `gorm:"foreignKey:PreferenceID"`
-	Total     uint      `gorm:"not null"`
+	Total     float64      `gorm:"not null"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 	DeleteAt  gorm.DeletedAt

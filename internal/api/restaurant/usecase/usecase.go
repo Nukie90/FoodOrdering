@@ -47,7 +47,7 @@ func (u *RestaurantUsecase) GetAllTable() ([]model.TableDetail, error) {
 	for _, v := range tables {
 		tableDetail = append(tableDetail, model.TableDetail{
 			TableNo: v.TableNo,
-			Status: v.Status,
+			Status:  v.Status,
 		})
 	}
 
@@ -73,4 +73,29 @@ func (u *RestaurantUsecase) GiveCustomerTable(table *model.GiveTable) (ulid.ULID
 
 	return preferenceID, nil
 
+}
+
+func (u *RestaurantUsecase) CheckHistory(receipt *model.CheckHistory) (model.TableOrder, error) {
+	receiptID := receipt.ReceiptID
+
+	order, err := u.restaurantRepo.GetOrder(receiptID)
+	if err != nil {
+		return model.TableOrder{}, errors.New("no order found")
+	}
+
+	var tableOrder model.TableOrder
+	for _, v := range order {
+		tableOrder.TableNo = int(v.TableNo)
+		foodName, err := u.restaurantRepo.GetFoodNameById(v.FoodId)
+		if err != nil {
+			return model.TableOrder{}, errors.New("failed to get food name")
+		}
+		tableOrder.Detail = append(tableOrder.Detail, model.OrderDetail{
+			FoodName: foodName,
+			Quantity: v.Quantity,
+			Status:   v.Status,
+		})
+	}
+
+	return tableOrder, nil
 }

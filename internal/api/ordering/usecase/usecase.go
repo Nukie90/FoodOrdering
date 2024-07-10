@@ -103,6 +103,7 @@ func (u *OrderingUsecase) SubmitCart(tableID string) error {
 	for _, v := range cart {
 		orderDetail = append(orderDetail, entity.Order{
 			TableNo:  v.TableNo,
+			PreferenceID: tableULID,
 			FoodId:   v.FoodId,
 			Quantity: v.Quantity,
 		})
@@ -142,7 +143,8 @@ func (u *OrderingUsecase) ReceiveOrder() ([]model.TableOrder, error) {
 			}
 
 			orderDetail = append(orderDetail, model.OrderDetail{
-				OderId:   v.OrderId,
+				OrderId:   v.OrderId,
+				PreferenceID: v.PreferenceID,
 				FoodName: foodName,
 				Quantity: v.Quantity,
 				Status:   v.Status,
@@ -168,7 +170,7 @@ func (u *OrderingUsecase) SendRobot(reqForm *model.SendRobotRequest) (uint8, err
 
 	for _, v := range order {
 		v.Status = "done"
-		err = u.orderingRepo.UpdateOrder(v)
+		err = u.orderingRepo.UpdateOrderStatus(v)
 		if err != nil {
 			return 0, err
 		}
@@ -186,10 +188,39 @@ func (u *OrderingUsecase) ReceiveRobot(tableNo uint8) error {
 	for _, v := range order {
 		if v.Status == "done" {
 			v.Status = "end"
-			err = u.orderingRepo.UpdateOrder(v)
+			err = u.orderingRepo.UpdateOrderStatus(v)
 			if err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func (u *OrderingUsecase) UpdateOrder(updateOrder *model.UpdateOrder) error {
+	order, err := u.orderingRepo.GetOrderByID(updateOrder.OrderID)
+	if err != nil {
+		return err
+	}
+
+	if len(order) == 0 {
+		return errors.New("order not found")
+	}
+
+	if updateOrder.Status == "cancel" {
+		order[0].Status = "cancel"
+		err = u.orderingRepo.UpdateOrderStatus(order[0])
+		if err != nil {
+			return err
+		}
+	}
+
+	if updateOrder.Quantity != 0 {
+		order[0].Quantity = updateOrder.Quantity
+		err = u.orderingRepo.UpdateOrderQuantity(order[0])
+		if err != nil {
+			return err
 		}
 	}
 

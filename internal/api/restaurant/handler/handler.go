@@ -69,3 +69,22 @@ func (h *RestaurantHandler) GiveCustomerTable(c *fiber.Ctx) error {
 
 
 }
+
+func (h *RestaurantHandler) CheckHistory(c *fiber.Ctx) error {
+	var reqForm model.CheckHistory
+
+	if err := c.BodyParser(&reqForm); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Bad Request",
+		})
+	}
+
+	history, err := h.restaurantUsecase.CheckHistory(&reqForm)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(history)
+}

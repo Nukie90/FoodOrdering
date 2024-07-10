@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"errors"
-	_ "foodOrder/domain/entity"
+	"foodOrder/domain/entity"
 	"foodOrder/domain/model"
 	"foodOrder/internal/api/payment/repository"
 
-	_ "github.com/oklog/ulid/v2"
+	"github.com/oklog/ulid/v2"
 )
 
 type PaymentUsecase struct {
@@ -47,6 +47,56 @@ func (u *PaymentUsecase) CreatePayment(payment *model.CreatePayment) (model.Bill
 	if err != nil {
 		return model.Bill{}, err
 	}
-	
+
 	return bill, nil
+}
+
+func (u *PaymentUsecase) PayBill(preferenceID string, payment *model.PayBill) (interface{}, model.Bill, error) {
+	tableNo := u.paymentRepo.GetTableNo(preferenceID)
+
+	var receiptID ulid.ULID
+	ulidPreferenceID, err := ulid.Parse(preferenceID)
+	if err != nil {
+		return nil, model.Bill{}, err
+	}
+
+	bill, err := u.CreatePayment(&model.CreatePayment{
+		TableNo: uint(tableNo),
+	})
+	if err != nil {
+		return 	nil, model.Bill{}, err
+	}
+
+	switch payment.PaymentMethod {
+	case "cash":
+		if payment.Amount < bill.Total {
+			return nil, model.Bill{}, errors.New("insufficient amount")
+		} else if payment.Amount > bill.Total {
+			change := payment.Amount - bill.Total
+
+			receiptID, err = u.paymentRepo.CreateBill(&entity.Payment{
+				PreferenceID: ulidPreferenceID,
+				Total:        bill.Total,
+			})
+			if err != nil {
+				return nil, model.Bill{}, err
+			}
+			bill.ReceiptID = receiptID
+
+			return change, bill, nil
+		}
+	case "credit":
+		receiptID, err = u.paymentRepo.CreateBill(&entity.Payment{
+			PreferenceID: ulidPreferenceID,
+			Total:        bill.Total,
+		})
+		bill.ReceiptID = receiptID
+		if err != nil {
+			return nil, bill, err
+		}
+	default:
+		return nil, model.Bill{}, errors.New("invalid payment method")
+	}
+
+	return nil, bill, nil
 }

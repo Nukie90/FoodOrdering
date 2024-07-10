@@ -100,7 +100,7 @@ func (r *OrderingRepo)SubmitCart(detail []entity.Order) error {
 
 func (r *OrderingRepo) GetOrder(tableNo uint8) ([]entity.Order, error) {
 	var order []entity.Order
-	if err := r.db.Where("table_no = ?", tableNo).Find(&order).Error; err != nil {
+	if err := r.db.Where("table_no = ? and status != 'paid' and status != 'cancel'", tableNo).Find(&order).Error; err != nil {
 		return nil, err
 	}
 
@@ -116,11 +116,22 @@ func (r *OrderingRepo) GetOrderByID(orderId ulid.ULID) ([]entity.Order, error) {
 	return order, nil
 }
 
-func (r *OrderingRepo) UpdateOrder(order entity.Order) error {
+func (r *OrderingRepo) UpdateOrderStatus(order entity.Order) error {
 	dbTx := r.db.Begin()
 	defer dbTx.Rollback()
 
 	if err := dbTx.Model(&entity.Order{}).Where("order_id = ?", order.OrderId).Update("status", order.Status).Error; err != nil {
+		return err
+	}
+
+	return dbTx.Commit().Error
+}
+
+func (r *OrderingRepo) UpdateOrderQuantity(order entity.Order) error {
+	dbTx := r.db.Begin()
+	defer dbTx.Rollback()
+
+	if err := dbTx.Model(&entity.Order{}).Where("order_id = ?", order.OrderId).Update("quantity", order.Quantity).Error; err != nil {
 		return err
 	}
 
